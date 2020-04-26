@@ -34,7 +34,7 @@ interface ModuleMap extends Mod<any, any> {
     keys?: string[];
 }
 export declare function installStatics(root: any, module: ModuleMap, statics: any, path?: string[], namespace?: string, recursive?: boolean): ModuleMap;
-interface VuexStore<S> extends Store<S> {
+export interface VuexStore<S> extends Store<S> {
     getters: {
         $statics: S;
     };
