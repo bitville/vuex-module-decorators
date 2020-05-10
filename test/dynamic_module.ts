@@ -1,7 +1,4 @@
-import Vuex, { Module as Mod } from 'vuex'
-import Vue from 'vue'
-Vue.use(Vuex)
-import { Action, Module, Mutation, MutationAction, VuexModule } from '..'
+import Vuex, { Action, Module, Mutation, MutationAction, VuexModule } from '..'
 import { expect } from 'chai'
 
 interface StoreType {
@@ -9,7 +6,7 @@ interface StoreType {
 }
 const store = new Vuex.Store<StoreType>({})
 
-@Module({ dynamic: true, store, name: 'mm' })
+@Module({ dynamic: true, store, name: 'mm', namespaced: false })
 class MyModule extends VuexModule {
   count = 0
 
