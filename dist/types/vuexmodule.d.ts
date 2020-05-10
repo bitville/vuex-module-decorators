@@ -1,4 +1,4 @@
-import { ActionTree, GetterTree, Module as Mod, ModuleTree, MutationTree, Store, ActionContext, Payload } from 'vuex';
+import { ActionTree, GetterTree, Module as Mod, ModuleTree, MutationTree, Store, ActionContext, Payload, StoreOptions } from 'vuex';
 export declare class Context<S, R = any> implements ActionContext<S, R> {
     namespace?: string;
     path: string[];
@@ -40,6 +40,5 @@ export interface VuexStore<S> extends Store<S> {
     };
 }
 export declare function newStore<M extends VuexModule>(module: ConstructorOf<M>): VuexStore<M>;
-export declare function newStore<S>(module: Mod<S, S>): VuexStore<S>;
-export declare function getModule<M extends VuexModule, R>(moduleClass: ConstructorOf<M>, store?: Store<R>): M;
+export declare function newStore<S>(module: StoreOptions<S>): VuexStore<S>;
 export {};

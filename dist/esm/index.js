@@ -1,4 +1,4 @@
-import { Store } from 'vuex';
+import Vuex, { Store } from 'vuex';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -77,13 +77,6 @@ function addPropertiesToObject(target, source) {
         _loop_1(k);
     }
 }
-/**
- * Returns a namespaced name of the module to be used as a store getter
- * @param module
- */
-function getModuleName(module) {
-    return getStaticName(getModulePath(module));
-}
 function getStaticName(path) {
     if (path.length === 0) {
         return '$statics';
@@ -94,12 +87,12 @@ function getStaticName(path) {
  * Returns a namespaced name of the module to be used as a store getter
  * @param module
  */
-function getModuleNamespace(module) {
-    if (!module._vmdModuleName) {
+function getModuleNamespace(modOpt) {
+    if (!modOpt.name) {
         throw new Error("ERR_GET_MODULE_NAME : Could not get module accessor.\n      Make sure your module has name, we can't make accessors for unnamed modules\n      i.e. @Module({ name: 'something' })");
     }
-    if (module.namespaced) {
-        return "" + module._vmdModuleName;
+    if (modOpt.namespaced) {
+        return "" + modOpt.name;
     }
     return '';
 }
@@ -107,14 +100,24 @@ function getModuleNamespace(module) {
  * Returns a namespaced path of the module to be used as a store getter
  * @param module
  */
-function getModulePath(module) {
-    if (!module._vmdModuleName) {
+function getModulePath(modOpt) {
+    if (!modOpt.name) {
         throw new Error("ERR_GET_MODULE_NAME : Could not get module accessor.\n      Make sure your module has name, we can't make accessors for unnamed modules\n      i.e. @Module({ name: 'something' })");
     }
-    return module._vmdModuleName.split('/');
+    return modOpt.name.split('/');
 }
 function getNamespacedKey(namespace, key) {
     return namespace ? namespace + "/" + key : key;
+}
+function install(Vue) {
+    Vue.use(Vuex);
+    Vue.mixin({ beforeCreate: storeInit });
+    function storeInit() {
+        var _this = this;
+        Object.defineProperty(this, '$stock', {
+            get: function () { return _this.$store.getters.$statics; }
+        });
+    }
 }
 
 function staticStateGenerator(statics, module, store, path) {
@@ -228,7 +231,7 @@ var Context = /** @class */ (function () {
         }
     };
     Context.prototype.getter = function (key) {
-        return this.rootGetters[this.namespaced(key)];
+        return this.getters[this.namespaced(key)];
     };
     Context.prototype.dispatch = function (key) {
         var _a;
@@ -287,21 +290,6 @@ function newStore(module) {
     store._vmdModuleMap = installStatics(store.getters, module, statics);
     return store;
 }
-function getModule(moduleClass, store) {
-    var moduleName = getModuleName(moduleClass);
-    if (!store) {
-        store = moduleClass._store;
-    }
-    if (!store) {
-        throw new Error("ERR_STORE_NOT_PROVIDED: To use getModule(), either the module\n      should be decorated with store in decorator, i.e. @Module({store: store}) or\n      store should be passed when calling getModule(), i.e. getModule(MyModule, this.$store)");
-    }
-    if (store.getters[moduleName]) {
-        return store.getters[moduleName];
-    }
-    var storeModule = staticModuleGenerator(moduleClass, store, getModulePath(moduleClass), getModuleNamespace(moduleClass), false);
-    store.getters[moduleName] = storeModule;
-    return storeModule;
-}
 
 var reservedKeys = [
     'namespaced',
@@ -350,9 +338,9 @@ function registerDynamicModule(module, modOpt) {
     module, { preserveState: modOpt.preserveState || false });
     if (moduleMap && oldStatics) {
         installStatics(modOpt.store.getters, moduleMap, oldStatics);
-        var path = getModulePath(module);
+        var path = getModulePath(modOpt);
         var name_1 = path[path.length - 1];
-        var namespace = getModuleNamespace(module);
+        var namespace = getModuleNamespace(modOpt);
         var recursive = true;
         var statics = staticModuleGenerator(module, modOpt.store, path, namespace, recursive);
         var parentStatics = path.slice(0, -1).reduce(function (s, key) { return s[key]; }, oldStatics);
@@ -401,16 +389,6 @@ function moduleDecoratorFactory(moduleOptions) {
             }
         });
         var modOpt = moduleOptions;
-        if (modOpt.name) {
-            Object.defineProperty(constructor, '_vmdModuleName', {
-                value: modOpt.name
-            });
-        }
-        if (modOpt.store) {
-            Object.defineProperty(constructor, '_store', {
-                value: modOpt.store
-            });
-        }
         if (modOpt.dynamic) {
             registerDynamicModule(module, modOpt);
         }
@@ -496,11 +474,11 @@ function actionDecoratorFactory(params) {
         var staticKey = '$statics/' + String(key);
         var action = function (context, payload) {
             return __awaiter(this, void 0, void 0, function () {
-                var actionPayload, moduleAccessor, moduleName, moduleAccessor, thisObj, e_1;
+                var actionPayload, moduleAccessor, thisObj, e_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 7, , 8]);
+                            _a.trys.push([0, 5, , 6]);
                             actionPayload = void 0;
                             if (!context.getters[staticKey]) return [3 /*break*/, 2];
                             moduleAccessor = context.getters[staticKey];
@@ -508,32 +486,21 @@ function actionDecoratorFactory(params) {
                             return [4 /*yield*/, actionFunction.call(moduleAccessor, payload)];
                         case 1:
                             actionPayload = _a.sent();
-                            return [3 /*break*/, 6];
+                            return [3 /*break*/, 4];
                         case 2:
-                            if (!module._store) return [3 /*break*/, 4];
-                            moduleName = getModuleName(module);
-                            moduleAccessor = context.rootGetters[moduleName]
-                                ? context.rootGetters[moduleName]
-                                : getModule(module);
-                            moduleAccessor.context = context;
-                            return [4 /*yield*/, actionFunction.call(moduleAccessor, payload)];
-                        case 3:
-                            actionPayload = _a.sent();
-                            return [3 /*break*/, 6];
-                        case 4:
                             thisObj = { context: context };
                             addPropertiesToObject(thisObj, context.state);
                             addPropertiesToObject(thisObj, context.getters);
                             return [4 /*yield*/, actionFunction.call(thisObj, payload)];
-                        case 5:
+                        case 3:
                             actionPayload = _a.sent();
-                            _a.label = 6;
-                        case 6:
+                            _a.label = 4;
+                        case 4:
                             if (commit) {
                                 context.commit(commit, actionPayload);
                             }
                             return [2 /*return*/, actionPayload];
-                        case 7:
+                        case 5:
                             e_1 = _a.sent();
                             throw rawError
                                 ? e_1
@@ -546,7 +513,7 @@ function actionDecoratorFactory(params) {
                                     new Error("Could not perform action " + key.toString()).stack +
                                     '\n' +
                                     e_1.stack);
-                        case 8: return [2 /*return*/];
+                        case 6: return [2 /*return*/];
                     }
                 });
             });
@@ -696,5 +663,10 @@ function MutationAction(paramsOrTarget, key, descriptor) {
     }
 }
 
-export { Action, Context, Module, Mutation, MutationAction, Submodule, VuexModule, getModule, newStore };
+var index = {
+    install: install
+};
+
+export default index;
+export { Action, Context, Module, Mutation, MutationAction, Submodule, VuexModule, newStore };
 //# sourceMappingURL=index.js.map
