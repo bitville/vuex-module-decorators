@@ -386,15 +386,17 @@ function moduleDecoratorFactory(moduleOptions) {
                 return stateFactory$1;
             }
         });
+        moduleOptions.stateFactory = moduleOptions.stateFactory !== false;
         if (!module.state) {
-            module.state = moduleOptions && moduleOptions.stateFactory ? stateFactory$1 : stateFactory$1();
+            module.state = moduleOptions.stateFactory ? stateFactory$1 : stateFactory$1();
         }
         if (!module.getters) {
             module.getters = {};
         }
-        if (!module.namespaced) {
-            module.namespaced = moduleOptions && moduleOptions.namespaced;
+        if (module.namespaced === undefined) {
+            module.namespaced = moduleOptions.namespaced !== false;
         }
+        moduleOptions.namespaced = module.namespaced;
         Object.getOwnPropertyNames(module.prototype).forEach(function (funcName) {
             var descriptor = Object.getOwnPropertyDescriptor(module.prototype, funcName);
             if (descriptor.get && module.getters) {
@@ -506,28 +508,24 @@ function actionDecoratorFactory(params) {
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            _a.trys.push([0, 5, , 6]);
-                            actionPayload = void 0;
                             if (!context.getters[staticKey]) return [3 /*break*/, 2];
                             moduleAccessor = context.getters[staticKey];
                             moduleAccessor.context = context;
                             return [4 /*yield*/, actionFunction.call(moduleAccessor, payload)];
                         case 1:
                             actionPayload = _a.sent();
-                            return [3 /*break*/, 4];
+                            return [3 /*break*/, 6];
                         case 2:
                             thisObj = { context: context };
                             addPropertiesToObject(thisObj, context.state);
                             addPropertiesToObject(thisObj, context.getters);
-                            return [4 /*yield*/, actionFunction.call(thisObj, payload)];
+                            _a.label = 3;
                         case 3:
-                            actionPayload = _a.sent();
-                            _a.label = 4;
+                            _a.trys.push([3, 5, , 6]);
+                            return [4 /*yield*/, actionFunction.call(thisObj, payload)];
                         case 4:
-                            if (commit) {
-                                context.commit(commit, actionPayload);
-                            }
-                            return [2 /*return*/, actionPayload];
+                            actionPayload = _a.sent();
+                            return [3 /*break*/, 6];
                         case 5:
                             e_1 = _a.sent();
                             throw rawError
@@ -541,7 +539,11 @@ function actionDecoratorFactory(params) {
                                     new Error("Could not perform action " + key.toString()).stack +
                                     '\n' +
                                     e_1.stack);
-                        case 6: return [2 /*return*/];
+                        case 6:
+                            if (commit) {
+                                context.commit(commit, actionPayload);
+                            }
+                            return [2 /*return*/, actionPayload];
                     }
                 });
             });
