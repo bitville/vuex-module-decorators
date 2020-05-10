@@ -21,6 +21,20 @@ MERCHANTABLITY OR NON-INFRINGEMENT.
 See the Apache Version 2.0 License for specific language governing permissions
 and limitations under the License.
 ***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
 
 function __awaiter(thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -267,6 +281,19 @@ var VuexModule = /** @class */ (function () {
     };
     return VuexModule;
 }());
+var VuexStore = /** @class */ (function (_super) {
+    __extends(VuexStore, _super);
+    function VuexStore(module) {
+        var _this = _super.call(this, module) || this;
+        var statics = staticModuleGenerator(module, _this);
+        /// store.getters.$static.path.to.module
+        /// store.getters['$static.path.to.module']
+        /// store.getters['path/to/namepace/$static']
+        _this._vmdModuleMap = installStatics(_this.getters, module, statics);
+        return _this;
+    }
+    return VuexStore;
+}(Vuex.Store));
 function installStatics(root, module, statics, path, namespace, recursive) {
     if (path === void 0) { path = []; }
     if (recursive === void 0) { recursive = true; }
@@ -290,12 +317,6 @@ function installStatics(root, module, statics, path, namespace, recursive) {
         });
     }
     return moduleMap;
-}
-function newStore(module) {
-    var store = new Vuex.Store(module);
-    var statics = staticModuleGenerator(module, store);
-    store._vmdModuleMap = installStatics(store.getters, module, statics);
-    return store;
 }
 
 var reservedKeys = [
@@ -352,8 +373,8 @@ function registerDynamicModule(module, modOpt) {
         var statics = staticModuleGenerator(module, modOpt.store, path, namespace, recursive);
         var parentStatics = path.slice(0, -1).reduce(function (s, key) { return s[key]; }, oldStatics);
         parentStatics[name_1] = statics;
-        var parentModuleMap = path.slice(0, -1).reduce(function (s, key) { return s[key]; }, moduleMap);
-        parentModuleMap[name_1] = installStatics(modOpt.store.getters, module, statics, path, namespace, recursive);
+        var parentModuleMap = path.slice(0, -1).reduce(function (s, key) { return s.modules[key]; }, moduleMap);
+        parentModuleMap.modules[name_1] = installStatics(modOpt.store.getters, module, statics, path, namespace, recursive);
     }
 }
 function moduleDecoratorFactory(moduleOptions) {
@@ -671,6 +692,8 @@ function MutationAction(paramsOrTarget, key, descriptor) {
 }
 
 var index = {
+    Module: VuexModule,
+    Store: VuexStore,
     install: install
 };
 
@@ -681,6 +704,6 @@ exports.Mutation = Mutation;
 exports.MutationAction = MutationAction;
 exports.Submodule = Submodule;
 exports.VuexModule = VuexModule;
+exports.VuexStore = VuexStore;
 exports.default = index;
-exports.newStore = newStore;
 //# sourceMappingURL=index.js.map

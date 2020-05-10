@@ -24,9 +24,10 @@ export declare class VuexModule<S = ThisType<any>, R = any> {
     context: ActionContext<S, R>;
     static create<S>(module: Mod<S, any>): typeof VuexModule;
 }
-declare type ConstructorOf<C> = {
-    new (...args: any[]): C;
-};
+export declare class VuexStore<S> extends Store<S> implements VuexStoreStatic<S> {
+    _vmdModuleMap: ModuleMap;
+    constructor(module: StoreOptions<S>);
+}
 interface ModuleMap extends Mod<any, any> {
     modules?: {
         [key: string]: ModuleMap;
@@ -34,11 +35,9 @@ interface ModuleMap extends Mod<any, any> {
     keys?: string[];
 }
 export declare function installStatics(root: any, module: ModuleMap, statics: any, path?: string[], namespace?: string, recursive?: boolean): ModuleMap;
-export interface VuexStore<S> extends Store<S> {
+export interface VuexStoreStatic<S> extends Store<S> {
     getters: {
         $statics: S;
     };
 }
-export declare function newStore<M extends VuexModule>(module: ConstructorOf<M>): VuexStore<M>;
-export declare function newStore<S>(module: StoreOptions<S>): VuexStore<S>;
 export {};
