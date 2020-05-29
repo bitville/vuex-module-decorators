@@ -1,6 +1,6 @@
 {
-  "name": "vuex-module-decorators",
-  "version": "0.17.0",
+  "name": "@bitville/vuex-module-decorators",
+  "version": "0.17.0-fixed.0",
   "description": "Decorators to make class-like Vuex modules",
   "main": "dist/cjs/index.js",
   "types": "dist/types/index.d.ts",
@@ -25,7 +25,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/championswimmer/vuex-module-decorators.git"
+    "url": "git+https://github.com/bitville/vuex-module-decorators.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "keywords": [
     "vuex",
@@ -34,15 +37,19 @@
     "decorators"
   ],
   "author": "Arnav Gupta <arnav@codingblocks.com>",
+  "contributors": [
+    "clouds56 (https://github.com/clouds56)",
+    "Juha Pulliainen <juha.pulliainen@bitville.com> (https://github.com/jpu)"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/championswimmer/vuex-module-decorators/issues"
+    "url": "https://github.com/bitville/vuex-module-decorators/issues"
   },
   "peerDependencies": {
     "vue": ">=2",
     "vuex": "3"
   },
-  "homepage": "https://github.com/championswimmer/vuex-module-decorators#readme",
+  "homepage": "https://github.com/bitville/vuex-module-decorators#readme",
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
